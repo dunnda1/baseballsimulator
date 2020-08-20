@@ -8,6 +8,14 @@ import sys
 import pandas as pd
 from numpy.random import choice
 
+import logging
+
+# create logger
+logger = logging.getLogger('baseball')
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+
 class Batter():
 	def __init__(self):
 		self.name = ""
@@ -339,29 +347,42 @@ def playGame(lineup1, lineup2, leagueDF, brDF):
 		state = "0,000"
 	# print("awayScore: " + str(awayScore) + " | homeScore: " + str(homeScore))
 	if awayScore > homeScore:
-		return 0
+		return 0, awayScore, homeScore
 	else:
-		return 1
+		return 1, awayScore, homeScore
 
 # simulates multiple games between two teams and prints out the result
-def simulate(lineup1, lineup2, leagueDF, brDF):
+def simulate(lineupHome, lineupAway, leagueDF, brDF, ngames=10):
 	awayWin = 0
 	homeWin = 0
-	for i in range(0, 1000):
-		result = playGame(lineup1, lineup2, leagueDF, brDF)
+
+	homeTeam = lineupHome[0]
+	awayTeam = lineupAway[0]
+
+
+	for i in range(0, ngames):
+		result, awayScore, homeScore = playGame(lineupHome, lineupAway, leagueDF, brDF)
+		
 		if result == 0:
+			winningTeam = awayTeam
 			awayWin += 1
 		else:
+			winningTeam = homeTeam
 			homeWin += 1
-	print("awayWin: " + str(awayWin) + " | homeWin: " + str(homeWin))
+		# print('Game {0} of {1}: {2} Wins, {3}-{4}'.format(i, ngames, winningTeam, awayScore, homeScore))
+		# logger.info('Game {0} of {1}: {2} Wins, {3}-{4}'.format(i, ngames, winningTeam, awayScore, homeScore))
+		logger.info(f'Game {i:4} of {ngames}: {winningTeam} wins, {awayScore} - {homeScore}')
+
+
+	print("Total Wins -- {0}(Away): {1} | {2}(Home): {3}".format(awayTeam, awayWin, homeTeam, homeWin))
 
 def main(argv):
 	batterDF, pitcherDF, leagueDF = read_data()
-	lineup1, lineup2 = create_lineups(argv[1], argv[2], batterDF, pitcherDF)
-	lineup1, lineup2, leagueDF = fill_statline(batterDF, pitcherDF, leagueDF, 
-											   lineup1, lineup2)
+	homeLineup, awayLineup = create_lineups(argv[1], argv[2], batterDF, pitcherDF)
+	homeLineup, awayLineup, leagueDF = fill_statline(batterDF, pitcherDF, leagueDF, 
+											   homeLineup, awayLineup)
 	brDF = fill_baserunning()
-	simulate(lineup1, lineup2, leagueDF, brDF)
+	simulate(homeLineup, awayLineup, leagueDF, brDF)
 
 if __name__ == "__main__": main(sys.argv)
 
