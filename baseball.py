@@ -6,9 +6,12 @@
 import csv
 import sys
 import pandas as pd
-from numpy.random import choice
+import numpy as np
+# from numpy.random import choice
+import random
 
 import logging
+import pprint as pp
 
 # create logger
 logger = logging.getLogger('baseball')
@@ -301,14 +304,14 @@ def playGame(lineup1, lineup2, leagueDF, brDF):
 			battingOrder = homeBattingOrder
 		while out < 3:
 			playProbList = calcOddsRatio(batter, pitcher, leagueDF)
-			play = choice(playList, p=playProbList)
+			play = np.random.choice(playList, p=playProbList)
 			if play == "1b" or play == "2b" or play == "3b" or play == "bo":
 				brDict = brDF.loc[state, play]
 				resultList = list(brDict.keys())[1:]  # keys() and values() methods are not supposed to preserve the order, but they seem to do so
 				countList = list(brDict.values())[1:]
 				totalCount = brDict["total"]
 				probList = [count / totalCount for count in countList]
-				result = choice(resultList, p=probList)
+				result = np.random.choice(resultList, p=probList)
 				out = int(result.split(",")[0])
 				bases = result.split(",")[1]
 				score += int(result.split(",")[2])
@@ -352,7 +355,7 @@ def playGame(lineup1, lineup2, leagueDF, brDF):
 		return 1, awayScore, homeScore
 
 # simulates multiple games between two teams and prints out the result
-def simulate(lineupHome, lineupAway, leagueDF, brDF, ngames=10):
+def simulateHead2Head(lineupHome, lineupAway, leagueDF, brDF, ngames=10):
 	awayWin = 0
 	homeWin = 0
 
@@ -374,16 +377,102 @@ def simulate(lineupHome, lineupAway, leagueDF, brDF, ngames=10):
 		logger.info(f'Game {i:4} of {ngames}: {winningTeam} wins, {awayScore} - {homeScore}')
 
 
+
 	print("Total Wins -- {0}(Away): {1} | {2}(Home): {3}".format(awayTeam, awayWin, homeTeam, homeWin))
 
-def main(argv):
+def make_schedules(teams, length=24):
+	nominal_season_length = length
+	home_games = int(nominal_season_length / 2)
+	home_games_per_opp = int(home_games / (len(teams) - 1))
+	logger.info(f'Making schedule for teams:{teams}')
+	
+	logging.info(f'Home Games Per Opponent: {home_games_per_opp}')
+
+	schedule = dict()
+	for team in teams:
+		opp_teams = np.setdiff1d(teams, [team]).tolist()
+		games = opp_teams * home_games_per_opp
+		random.shuffle(games)
+		schedule[team] = games
+
+	return schedule
+
+def doHead2HeadSimulation(homeFile, awayFile):
+	
 	batterDF, pitcherDF, leagueDF = read_data()
-	homeLineup, awayLineup = create_lineups(argv[1], argv[2], batterDF, pitcherDF)
+	homeLineup, awayLineup = create_lineups(homeFile, awayFile, batterDF, pitcherDF)
 	homeLineup, awayLineup, leagueDF = fill_statline(batterDF, pitcherDF, leagueDF, 
 											   homeLineup, awayLineup)
 	brDF = fill_baserunning()
-	simulate(homeLineup, awayLineup, leagueDF, brDF)
+	simulateHead2Head(homeLineup, awayLineup, leagueDF, brDF)
 
+def getLineupFiles(teams):
+	lineupfiles = dict()
+	for team in teams:
+		filename = f'sample_lineup_{team.lower()}_2017.txt'
+		lineupfiles[team] = filename
+	
+	return lineupfiles
+
+def doSeasonSimulation(schedule):
+
+	logger.info(f'Starting Season Simulation with teams {list(schedule.keys())}')
+	lineupfiles = getLineupFiles(list(schedule.keys()))
+
+	batterDF, pitcherDF, leagueDF = read_data()
+
+	results = dict()
+	for team in schedule:
+		results[team] = {'WINS': 0, 'LOSES': 0}
+
+
+	for homeTeam in schedule:
+		# if not homeTeam in results:
+		# 	results[homeTeam] = {'WINS': 0, 'LOSES': 0}
+
+		opponents = schedule[homeTeam]
+		homeFile = lineupfiles[homeTeam]
+		for awayTeam in opponents:
+			awayFile = lineupfiles[awayTeam]
+			
+			homeLineup, awayLineup = create_lineups(homeFile, awayFile, batterDF, pitcherDF)
+			homeLineup, awayLineup, leagueDF = fill_statline(batterDF, pitcherDF, leagueDF, homeLineup, awayLineup)
+			brDF = fill_baserunning()
+
+
+			result, awayScore, homeScore = playGame(homeLineup, awayLineup, leagueDF, brDF)
+			if result == 0:
+				winningTeam = awayTeam
+				losingTeam = homeTeam
+				# awayWin += 1
+			else:
+				winningTeam = homeTeam
+				losingTeam = awayTeam
+				# homeWin += 1
+
+			results[winningTeam]['WINS'] += 1 
+			results[winningTeam]['LOSES'] += 1
+
+			logger.info(f'{awayTeam} @ {homeTeam}: {winningTeam} wins, {awayScore} - {homeScore}')
+
+	return results
+
+def main(argv):
+	
+	mode = 'season_sim'
+
+	if mode == 'head_to_head_sim':
+		homeLineupFile = argv[1]
+		awayLineupFile = argv[2]
+		doHead2HeadSimulation(homeLineupFile, awayLineupFile)
+
+	elif mode == 'season_sim':
+		teams = ['Cardinals', 'Nationals', 'Dodgers', 'Astros']
+		schedule = make_schedules(teams, length=162)
+		results = doSeasonSimulation(schedule)
+		pp.pprint(results)
+
+	
 if __name__ == "__main__": main(sys.argv)
 
 
