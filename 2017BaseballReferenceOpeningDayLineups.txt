@@ -1,0 +1,33 @@
+# data downloaded from :
+#  https://www.baseball-reference.com/leagues/MLB/2017-opening-day-rosters.shtml 
+Tm,Lg,C,1B,2B,3B,SS,LF,CF,RF,P,DH
+BAL,AL,Castillo,Davis,Schoop,Machado,Hardy,Kim,Jones,Smith,Gausman,Trumbo
+BOS,AL,Leon,Moreland,Pedroia,Sandoval,Bogaerts,Benintendi,Bradley,Betts,Porcello,Ramirez
+CHW,AL,Narvaez,Abreu,Saladino,Frazier,Anderson,Cabrera,May,Garcia,Quintana,Asche
+CLE,AL,Gomes,Encarnacion,Ramirez,Díaz,Lindor,Brantley,Naquin,Almonte,Kluber,Santana
+DET,AL,McCann,Cabrera,Kinsler,Castellanos,Iglesias,Upton,Jones,Mahtook,Verlander,Martinez
+HOU,AL,McCann,Gurriel,Altuve,Bregman,Correa,Aoki,Springer,Reddick,Keuchel,Beltran
+KCR,AL,Perez,Hosmer,Mondesi,Moustakas,Escobar,Gordon,Cain,Orlando,Duffy,Moss
+LAA,AL,Maldonado,Cron,Espinosa,Escobar,Simmons,Maybin,Trout,Calhoun,Nolasco,Pujols
+MIN,AL,Castro,Mauer,Dozier,Sano,Polanco,Rosario,Buxton,Kepler,Santana,Grossman
+NYY,AL,Sanchez,Bird,Castro,Headley,Torreyes,Gardner,Ellsbury,Judge,Tanaka,Holliday
+OAK,AL,Vogt,Alonso,Lowrie,Plouffe,Semien,Davis,Davis,Joyce,Graveman,Healy
+SEA,AL,Zunino,Valencia,Cano,Seager,Segura,Dyson,Martín,Haniger,Hernandez,Cruz
+TBR,AL,Norris,Morrison,Miller,Longoria,Beckham,Smith,Kiermaier,Souza,Archer,Dickerson
+TEX,AL,Lucroy,Napoli,Odor,Gallo,Andrus,Profar,Gomez,Mazara,Darvish,Choo
+TOR,AL,Martin,Pearce,Travis,Donaldson,Tulowitzki,Carrera,Pillar,Bautista,Estrada,Morales
+ARI,NL,Mathis,Goldschmidt,Drury,Lamb,Owings,Tomás,Pollock,Peralta,Greinke,
+ATL,NL,Flowers,Freeman,Phillips,Garcia,Swanson,Kemp,Inciarte,Markakis,Teheran,
+CHC,NL,Contreras,Rizzo,Baez,Bryant,Russell,Schwarber,Heyward,Zobrist,Lester,
+CIN,NL,Barnhart,Votto,Peraza,Suarez,Cozart,Duvall,Hamilton,Schebler,Feldman,
+COL,NL,Wolters,Reynolds,LeMahieu,Arenado,Story,Parra,Blackmon,Gonzalez,Gray,
+LAD,NL,Grandal,Gonzalez,Forsythe,Turner,Seager,Toles,Pederson,Puig,Kershaw,
+MIA,NL,Realmuto,Bour,Gordon,Dietrich,Hechavarria,Ozuna,Yelich,Stanton,Volquez,
+MIL,NL,Bandy,Thames,Villar,Shaw,Arcia,Braun,Broxton,Santana,Guerra,
+NYM,NL,Rivera,Duda,Walker,Reyes,Cabrera,Céspedes,Granderson,Bruce,Syndergaard,
+PHI,NL,Rupp,Joseph,Hernandez,Franco,Galvis,Kendrick,Herrera,Saunders,Hellickson,
+PIT,NL,Cervelli,Bell,Harrison,Freese,Mercer,Frazier,Marte,McCutchen,Cole,Polanco
+SDP,NL,Hedges,Myers,Solarte,Schimpf,Aybar,Jankowski,Margot,Renfroe,Chacin,
+SFG,NL,Posey,Belt,Panik,Nunez,Crawford,Parker,Span,Pence,Bumgarner,
+STL,NL,Molina,Carpenter,Gyorko,Peralta,Díaz,Grichuk,Fowler,Piscotty,Martinez,
+WSN,NL,Wieters,Zimmerman,Murphy,Drew,Turner,Werth,Eaton,Harper,Strasburg,
