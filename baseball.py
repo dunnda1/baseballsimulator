@@ -10,15 +10,15 @@ import numpy as np
 # from numpy.random import choice
 import random
 import json
-
+import pika
 import logging
 import pprint as pp
 
 # create logger
 logger = logging.getLogger('baseball')
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-logger.setLevel(logging.INFO)
-
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+# logger.setLevel(logging.INFO)
+LOG_LEVEL_VERBOSE = 19
 
 class Batter():
     def __init__(self):
@@ -721,38 +721,107 @@ class League():
             self.standings.loc[winningTeam, 'W'] += 1
             self.standings.loc[losingTeam, 'L'] += 1
 
-            logger.info(f'{awayTeam} @ {homeTeam}: {winningTeam} wins, {awayScore} - {homeScore}')
-        
+            logger.log( LOG_LEVEL_VERBOSE, f'{awayTeam} @ {homeTeam}: {winningTeam} wins, {awayScore} - {homeScore}')
+
+def minion_callback(ch, method, properties, body):
+    # print(" [x] Season parameters recieved: " % body)
+    season_params = json.loads(body)
+ 
+    logger.info('Season simulation parameters recieved for {0} season'.format(season_params['year']))
+ 
+    # print('Season simulations parameters recieved:')
+    # pp.pprint(season_params)
+
+    league = League(teams=season_params['teams'])
+    # schedule_file = f'schedule_{yr}.json'
+    # with open(schedule_file) as f:
+    #     schedule = json.load(f)
+    # print(schedule)
 
 
-def main(mode='season_sim', season_length=4):
+    league.init_season(teams=season_params['teams'], schedule=season_params['schedule'], year=season_params['year'])
+    league.simulate_season()
+    # doSeasonSimulation(schedule)
+    standings = league.get_standings()
+
+    print('\nFinal Standings for {0} Season:'.format(season_params['year']))		
+    pp.pprint(standings)
+    print('\n')
+
+
+
+
+def minion_main(simulation):
+    logger.info( f'Starting minion mode with simulation type \'{simulation}\'')
     
-
-    if mode == 'head_to_head_sim':
+    if simulation == 'head_to_head_sim':
         logger.error('Head-to-Head Simulation not working')
         # homeLineupFile = argv[1]
         # awayLineupFile = argv[2]
         # doHead2HeadSimulation(homeLineupFile, awayLineupFile)
 
-    elif mode == 'season_sim':
-        teams = ['Cardinals', 'Nationals', 'Dodgers', 'Astros']
+    elif simulation == 'season_sim':
+        # teams = ['Cardinals', 'Nationals', 'Dodgers', 'Astros']
         # schedule = make_schedules(teams, length=162)
         
-        league = League(teams=teams)
-        schedule_file = 'schedule_2017.json'
-        with open(schedule_file) as f:
-            schedule = json.load(f)
-        print(schedule)
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+
+        channel.queue_declare(queue='baseball-sim')
+
+        channel.basic_consume(queue='baseball-sim', on_message_callback=minion_callback, auto_ack=True)
+
+        logger.info(' [*] Waiting for messages. To exit press CTRL+C')
+        channel.start_consuming()
 
 
-        league.init_season(teams, schedule=schedule, year=2017)
-        league.simulate_season()
-        # doSeasonSimulation(schedule)
-        standings = league.get_standings()
 
-        print('Final Season Standings:')		
-        pp.pprint(standings)
 
+
+
+def main(teams, simulation='season_sim', mode='standalone'):
     
+    yr = 2017
+
+    if mode == 'standalone':
+        if simulation == 'head_to_head_sim':
+            logger.error('Head-to-Head Simulation not working')
+            # homeLineupFile = argv[1]
+            # awayLineupFile = argv[2]
+            # doHead2HeadSimulation(homeLineupFile, awayLineupFile)
+
+        elif simulation == 'season_sim':
+            # schedule = make_schedules(teams, length=162)
+            
+            league = League(teams=teams)
+            schedule_file = f'schedule_{yr}.json'
+            with open(schedule_file) as f:
+                schedule = json.load(f)
+            # print(schedule)
+
+
+            league.init_season(teams, schedule=schedule, year=yr)
+            league.simulate_season()
+            # doSeasonSimulation(schedule)
+            standings = league.get_standings()
+
+            print('Final Season Standings:')		
+            pp.pprint(standings)
+    elif mode == 'minion':
+        minion_main(simulation)
+    elif mode == 'Gru':
+        gru_main(simulation)
+    else:
+        logger.error(f'Unknown mode type (\'{mode}\') specified')
+        
+
+
 if __name__ == "__main__": 
-        main()
+
+        verbose = False
+        if verbose:
+            logger.setLevel(LOG_LEVEL_VERBOSE)
+
+        teams = ['Cardinals', 'Nationals', 'Dodgers', 'Astros']
+
+        main(teams=teams, simulation='season_sim', mode='minion')
